@@ -1,0 +1,14 @@
+{
+  "name": "@iridiumgo/iridium-logs-assets",
+  "private": true,
+  "scripts": {
+    "build": "esbuild frontend/log-viewer.js --bundle --minify --format=esm --outfile=dist/log-viewer.js && esbuild frontend/log-viewer.css --bundle --minify --outfile=dist/log-viewer.css"
+  },
+  "dependencies": {
+    "@tanstack/virtual-core": "3.17.6",
+    "fancy-ansi": "0.1.3"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.12"
+  }
+}

@@ -1,0 +1,52 @@
+package iridiumlogs
+
+import "strconv"
+import "github.com/iridiumgo/iridium/view/blocks/fields"
+
+templ logViewer(viewer *LogViewerConcrete) {
+	@fields.FieldWrapper(viewer) {
+		<div
+			id={ viewer.GetID() }
+			class="ir-log-viewer"
+			data-ir-log-viewer
+			data-endpoint={ viewer.Endpoint }
+			data-source={ viewer.Source }
+			data-directory={ viewer.Directory }
+			data-height={ viewer.Height }
+			data-levels={ viewer.Levels }
+			data-initial-lines={ strconv.Itoa(viewer.InitialLines) }
+			data-max-entries={ strconv.Itoa(viewer.MaxEntries) }
+			data-searchable={ strconv.FormatBool(viewer.Searchable) }
+			data-follow={ strconv.FormatBool(viewer.Follow) }
+			data-ansi={ strconv.FormatBool(viewer.ANSI) }
+		>
+			<div class="ir-log-toolbar">
+				<div class="ir-log-status" data-status="connecting">
+					<span class="ir-log-status-dot"></span>
+					<span data-status-label>Connecting</span>
+				</div>
+				<label class="ir-log-search">
+					<span class="sr-only">Filter logs</span>
+					<input type="search" placeholder="Filter logs…" autocomplete="off" spellcheck="false" data-log-search/>
+				</label>
+				<div class="ir-log-levels" data-log-levels></div>
+				<button type="button" class="ir-log-button" data-log-pause aria-pressed="false">Pause</button>
+				<button type="button" class="ir-log-button" data-log-follow aria-pressed={ strconv.FormatBool(viewer.Follow) }>Tail</button>
+				<button type="button" class="ir-log-icon-button" data-log-clear aria-label="Clear displayed logs" title="Clear displayed logs">
+					<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m-8 0 1 13h8l1-13"/></svg>
+				</button>
+			</div>
+			<div class="ir-log-viewport" data-log-viewport tabindex="0">
+				<div class="ir-log-scroll-size" data-log-scroll-size>
+					<div class="ir-log-rows" data-log-rows></div>
+				</div>
+			</div>
+			<div class="ir-log-footer">
+				<span data-log-count>0 entries</span>
+				<span data-log-rate></span>
+				<button type="button" class="ir-log-new" data-log-new hidden>Jump to latest</button>
+				<span class="ir-log-footer-hint">Newest at bottom</span>
+			</div>
+		</div>
+	}
+}
