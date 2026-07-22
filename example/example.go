@@ -1,7 +1,7 @@
 package example
 
 import (
-	iridiumlogs "github.com/iridiumgo/iridium-logs"
+	iridiumlogs "github.com/asosick/iridium-logs"
 	"github.com/iridiumgo/iridium/core/form"
 	"github.com/iridiumgo/iridium/core/page/panel"
 	"github.com/iridiumgo/iridium/network/wrapper"

@@ -18,7 +18,7 @@ The browser bundle wraps [TanStack Virtual](https://tanstack.com/virtual/latest)
 ## Install
 
 ```sh
-go get github.com/iridiumgo/iridium-logs
+go get github.com/asosick/iridium-logs
 ```
 
 The plugin embeds its compiled JavaScript and CSS. Consuming applications do not run npm. npm is only required when changing the plugin's frontend source.
