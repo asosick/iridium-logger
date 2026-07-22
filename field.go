@@ -15,7 +15,7 @@ import (
 	"github.com/iridiumgo/iridium/core/tools"
 )
 
-const logViewerResolver = "iridium-logs::form-log-viewer"
+const logViewerResolver = "iridium-logger::form-log-viewer"
 
 var registeredFieldTypes sync.Map
 

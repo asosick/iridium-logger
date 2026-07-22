@@ -7,7 +7,7 @@ import (
 	"github.com/iridiumgo/iridium/core/asset"
 )
 
-const assetPackage = "iridium-logs"
+const assetPackage = "iridium-logger"
 
 //go:embed dist/*
 var assets embed.FS
