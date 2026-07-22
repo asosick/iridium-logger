@@ -1,5 +1,5 @@
 {
-  "name": "@iridiumgo/iridium-logs-assets",
+  "name": "@asosick/iridium-logger-assets",
   "private": true,
   "scripts": {
     "build": "esbuild frontend/log-viewer.js --bundle --minify --format=esm --outfile=dist/log-viewer.js && esbuild frontend/log-viewer.css --bundle --minify --outfile=dist/log-viewer.css"

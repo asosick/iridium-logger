@@ -1,6 +1,6 @@
-# Iridium Logs
+# Iridium Logger
 
-`iridium-logs` is a presentational form component for viewing and following server log files inside an Iridium form. It uses Iridium's form resolution, field wrapper, route middleware, and embedded asset registry.
+`iridium-logger` is a presentational form component for viewing and following server log files inside an Iridium form. It uses Iridium's form resolution, field wrapper, route middleware, and embedded asset registry.
 
 The browser bundle wraps [TanStack Virtual](https://tanstack.com/virtual/latest) for row virtualization and [Fancy ANSI](https://github.com/kubetail-org/fancy-ansi) for safe ANSI rendering. It does not introduce React, an iframe, a separate application, or a CDN dependency.
 

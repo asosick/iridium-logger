@@ -1,4 +1,4 @@
-module github.com/asosick/iridium-logs
+module github.com/asosick/iridium-logger
 
 go 1.26.0
 
