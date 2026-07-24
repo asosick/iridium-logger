@@ -30,6 +30,7 @@ type FormLogViewer[T core.Model] struct {
 	InitialLinesInt tools.Resolvable[*ctxForm.Field[T], int]
 	MaxEntriesInt   tools.Resolvable[*ctxForm.Field[T], int]
 	SearchableBool  tools.Resolvable[*ctxForm.Field[T], bool]
+	ClearableBool   tools.Resolvable[*ctxForm.Field[T], bool]
 	FollowBool      tools.Resolvable[*ctxForm.Field[T], bool]
 	ANSIBool        tools.Resolvable[*ctxForm.Field[T], bool]
 }
@@ -45,6 +46,7 @@ type LogViewerConcrete struct {
 	InitialLines int
 	MaxEntries   int
 	Searchable   bool
+	Clearable    bool
 	Follow       bool
 	ANSI         bool
 }
@@ -63,6 +65,7 @@ func New[T core.Model](name, endpoint string) *FormLogViewer[T] {
 		InitialLinesInt:         staticValue[*ctxForm.Field[T]](defaultInitialLines),
 		MaxEntriesInt:           staticValue[*ctxForm.Field[T]](5_000),
 		SearchableBool:          staticValue[*ctxForm.Field[T]](true),
+		ClearableBool:           staticValue[*ctxForm.Field[T]](true),
 		FollowBool:              staticValue[*ctxForm.Field[T]](true),
 		ANSIBool:                staticValue[*ctxForm.Field[T]](true),
 	}
@@ -135,6 +138,12 @@ func (r *FormLogViewer[T]) WithoutSearch() *FormLogViewer[T] {
 	return r
 }
 
+// WithoutClear hides the control that clears entries from the browser.
+func (r *FormLogViewer[T]) WithoutClear() *FormLogViewer[T] {
+	tools.SetFieldValue(&r.ClearableBool, false)
+	return r
+}
+
 // WithoutFollow starts the viewer without automatically following new lines.
 func (r *FormLogViewer[T]) WithoutFollow() *FormLogViewer[T] {
 	tools.SetFieldValue(&r.FollowBool, false)
@@ -182,6 +191,7 @@ func (r *FormLogViewer[T]) Copy() field.IFormFieldResolvable[T] {
 		InitialLinesInt:         r.InitialLinesInt,
 		MaxEntriesInt:           r.MaxEntriesInt,
 		SearchableBool:          r.SearchableBool,
+		ClearableBool:           r.ClearableBool,
 		FollowBool:              r.FollowBool,
 		ANSIBool:                r.ANSIBool,
 	}
@@ -222,6 +232,7 @@ func registerFieldResolver[T core.Model]() {
 				InitialLines:          max(value.InitialLinesInt.Get(ctx), 0),
 				MaxEntries:            min(max(value.MaxEntriesInt.Get(ctx), 100), 50_000),
 				Searchable:            value.SearchableBool.Get(ctx),
+				Clearable:             value.ClearableBool.Get(ctx),
 				Follow:                value.FollowBool.Get(ctx),
 				ANSI:                  value.ANSIBool.Get(ctx),
 			}, nil

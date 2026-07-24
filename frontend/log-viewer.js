@@ -53,7 +53,7 @@ class LogViewer {
     this.search.addEventListener("input", () => this.applyFilter(), options);
     this.pauseButton.addEventListener("click", () => this.togglePause(), options);
     this.followButton.addEventListener("click", () => this.setFollowing(!this.following), options);
-    this.root.querySelector("[data-log-clear]").addEventListener("click", () => {
+    this.root.querySelector("[data-log-clear]")?.addEventListener("click", () => {
       this.entries = [];
       this.pending = [];
       this.applyFilter();
@@ -191,20 +191,24 @@ class LogViewer {
       row.className = "ir-log-row";
       row.dataset.index = String(item.index);
       row.dataset.level = entry.level;
+      row.dataset.structured = String(entry.structured);
       row.style.transform = `translateY(${item.start}px)`;
       row.style.height = `${item.size}px`;
       row.title = entry.plain;
 
-      const timestamp = document.createElement("time");
-      timestamp.textContent = displayTime(entry.time);
-      const level = document.createElement("span");
-      level.className = "ir-log-row-level";
-      level.textContent = entry.level || "LOG";
       const message = document.createElement("span");
       message.className = "ir-log-row-message";
       if (this.useAnsi) message.innerHTML = ansi.toHtml(entry.message || entry.raw);
       else message.textContent = stripAnsi(entry.message || entry.raw);
-      row.append(timestamp, level, message);
+      if (entry.structured) {
+        const timestamp = document.createElement("time");
+        timestamp.textContent = displayTime(entry.time);
+        const level = document.createElement("span");
+        level.className = "ir-log-row-level";
+        level.textContent = entry.level || "LOG";
+        row.append(timestamp, level);
+      }
+      row.append(message);
       fragment.append(row);
     }
     this.rows.replaceChildren(fragment);
@@ -268,12 +272,16 @@ function parseEntry(raw) {
     }
     fields[match[1]] = value;
   }
+  const time = fields.time || fields.timestamp || "";
+  const level = normalizeLevel(fields.level || "");
+  const message = fields.msg || fields.message || "";
   return {
     raw,
     plain,
-    time: fields.time || fields.timestamp || "",
-    level: normalizeLevel(fields.level || ""),
-    message: fields.msg || fields.message || "",
+    time,
+    level,
+    message,
+    structured: Boolean(time || level || message),
   };
 }
 

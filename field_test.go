@@ -50,6 +50,8 @@ func TestFormLogViewerResolvesAsPresentationalField(t *testing.T) {
 		`data-source="worker"`,
 		`data-directory="runtime"`,
 		`data-levels="DEBUG,ERROR"`,
+		`data-log-clear`,
+		`Keep the view pinned to the newest log lines as they arrive`,
 		`Runtime logs`,
 	} {
 		if !strings.Contains(html, expected) {
@@ -58,6 +60,26 @@ func TestFormLogViewerResolvesAsPresentationalField(t *testing.T) {
 	}
 	if strings.Contains(html, `name="RuntimeLogs"`) {
 		t.Fatal("presentational viewer unexpectedly rendered a submitted input")
+	}
+}
+
+func TestFormLogViewerCanHideClearControl(t *testing.T) {
+	t.Parallel()
+
+	concrete := New[testModel]("RuntimeLogs", "/logs/stream").
+		WithoutClear().
+		Resolve(&ctxForm.Field[testModel]{}).(*LogViewerConcrete)
+
+	if concrete.Clearable {
+		t.Fatal("clear control should be disabled")
+	}
+
+	var rendered bytes.Buffer
+	if err := concrete.Component().Render(context.Background(), &rendered); err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(rendered.String(), `data-log-clear`) {
+		t.Fatal("clear control was rendered")
 	}
 }
 

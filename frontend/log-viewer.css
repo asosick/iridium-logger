@@ -101,6 +101,7 @@
 .ir-log-row:hover { background: rgb(255 255 255 / 3.5%); }
 .ir-log-row[data-level="WARN"] { border-left-color: var(--ir-log-warn); }
 .ir-log-row[data-level="ERROR"], .ir-log-row[data-level="FATAL"], .ir-log-row[data-level="PANIC"] { border-left-color: var(--ir-log-error); background: rgb(251 113 133 / 3.5%); }
+.ir-log-row[data-structured="false"] .ir-log-row-message { grid-column: 1 / -1; }
 .ir-log-row time { overflow: hidden; color: var(--ir-log-muted); white-space: nowrap; text-overflow: ellipsis; }
 .ir-log-row-level { color: var(--ir-log-debug); font-size: .625rem; font-weight: 800; letter-spacing: .04em; }
 .ir-log-row[data-level="INFO"] .ir-log-row-level { color: var(--ir-log-info); }
