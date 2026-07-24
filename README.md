@@ -4,6 +4,8 @@ Iridium Logger is an Iridium form field for displaying live server logs inside a
 
 The plugin is designed for operational dashboards, administration panels, worker monitors, and other authenticated Iridium pages. It is presentational: the viewer does not dehydrate log content into the form model and does not modify the source files.
 
+This plugin was developed by gpt5.6 sol with human oversight.
+
 ## Features
 
 - Live log streaming with automatic reconnection.
