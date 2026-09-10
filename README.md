@@ -20,6 +20,7 @@ This plugin was developed by gpt5.6 sol with human oversight.
 - Text search and configurable log-level toggles.
 - Pause and resume controls. New lines continue buffering while the viewer is paused.
 - Tail-follow mode, manual scrolling, and a button to return to the newest output.
+- Download control for the complete log file currently selected by the viewer.
 - Browser-only clearing of displayed entries. Clearing never deletes or truncates a log file.
 - Live line-rate and entry-count indicators.
 - Configurable viewer height, initial line count, retained browser entries, and visible levels.
@@ -43,6 +44,7 @@ Create a handler with server-owned log sources, add the field to an Iridium form
 
 ```go
 stream, err := iridiumlogs.NewHandler(iridiumlogs.Config{
+	AllowDownloads: true,
 	Sources: []iridiumlogs.Source{
 		{ID: "application", Path: "/var/log/my-app/application.log"},
 		{ID: "worker", Path: "/var/log/my-app/worker.log"},
@@ -60,6 +62,7 @@ definition := form.NewForm[LogPage](nil).
 			Label("Application logs").
 			Description("Live output from the application process.").
 			Levels("DEBUG", "INFO", "WARN", "ERROR").
+			Download().
 			InitialLines(250).
 			MaxEntries(5000).
 			Height("40rem"),
@@ -126,6 +129,7 @@ Directory selection is intentionally narrow. Only regular direct children are ac
 | `MaxInitialLines` | `2,000` | Maximum lines a connection may request initially. |
 | `MaxLineBytes` | `256 KiB` | Maximum bytes retained from one line. Longer lines are marked as truncated. |
 | `MaxConnections` | `50` | Maximum simultaneous live streams for one handler. |
+| `AllowDownloads` | `false` | Enables complete log-file downloads through the handler. The field must also opt in with `Download()`. |
 
 Missing files are tolerated. This allows an application to start before a log file has been created; the viewer will continue polling and can begin displaying output when the file appears.
 
@@ -151,11 +155,13 @@ Configuration methods:
 - `Endpoint(url)` and `EndpointFn(fn)` set or resolve the stream endpoint.
 - `Height(cssSize)` sets the viewer's CSS block size.
 - `Levels(levels...)` defines the available level toggles. Values are normalized to uppercase.
+- `LevelsFn(fn)` resolves the available level toggles as `[]string` from the current form request. Return `nil` or an empty slice to hide all level toggles.
 - `InitialLines(count)` controls the initial tail size.
 - `MaxEntries(count)` bounds the number of entries retained in browser memory. Values are constrained to 100–50,000.
 - `WithoutSearch()` removes the text filter.
 - `WithoutClear()` removes the browser-only clear control.
 - `WithoutFollow()` starts without automatic tail-following.
+- `Download()` displays the control for downloading the complete selected log file. The handler must also set `AllowDownloads: true`.
 - `WithoutANSI()` strips ANSI sequences and renders plain text.
 - `Label(label)`, `Description(description)`, `ColumnSpan(columns)`, and `HiddenFn(fn)` use the normal Iridium field behaviour.
 
@@ -181,7 +187,7 @@ time=2026-07-24T15:04:05Z level=INFO msg="worker started"
 
 Recognized timestamps and levels are shown in dedicated columns, and the message is rendered separately. `WARNING` is normalized to `WARN`. Lines that do not match this structure remain readable as full-width unstructured output. Custom JSON, syslog, or other formats are displayed safely as text unless their fields happen to match the supported key/value pattern.
 
-## Stream behaviour
+## Stream and download behaviour
 
 The handler exposes a `GET` SSE endpoint. It sends:
 
@@ -190,6 +196,8 @@ The handler exposes a `GET` SSE endpoint. It sends:
 - `rotation` when the file is replaced or truncated.
 - `problem` when the source is temporarily unavailable.
 - SSE comment heartbeats at the configured interval.
+
+When `AllowDownloads` is enabled, the same authenticated endpoint accepts `download=1` and returns the complete selected log file as a text attachment. The field must also opt in with `Download()`. The browser uses the selected source ID and, for directory sources, the selected direct-child filename; filesystem paths are never sent by the viewer.
 
 The handler rejects unsupported methods, unknown source selections, and connections over `MaxConnections`. It also disables common proxy buffering with `X-Accel-Buffering: no`; reverse proxies may require additional SSE configuration.
 

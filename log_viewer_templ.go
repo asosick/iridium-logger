@@ -187,14 +187,14 @@ func logViewer(viewer *LogViewerConcrete) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "\"><div class=\"ir-log-toolbar\"><div class=\"ir-log-status\" data-status=\"connecting\"><span class=\"ir-log-status-dot\"></span> <span data-status-label>Connecting</span></div><label class=\"ir-log-search\"><span class=\"sr-only\">Filter logs</span> <input type=\"search\" placeholder=\"Filter logs…\" autocomplete=\"off\" spellcheck=\"false\" data-log-search></label><div class=\"ir-log-levels\" data-log-levels></div><button type=\"button\" class=\"ir-log-button\" data-log-pause aria-pressed=\"false\" title=\"Pause new lines on screen while they continue buffering\">Pause</button> <button type=\"button\" class=\"ir-log-button\" data-log-follow aria-pressed=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "\"><div class=\"ir-log-toolbar\"><div class=\"ir-log-status\" data-status=\"connecting\"><span class=\"ir-log-status-dot\"></span> <span data-status-label>Connecting</span></div><label class=\"ir-log-search\"><span class=\"sr-only\">Filter logs</span> <input type=\"search\" placeholder=\"Filter logs…\" autocomplete=\"off\" spellcheck=\"false\" data-log-search></label><div class=\"ir-log-levels\" data-log-levels></div><div class=\"ir-log-toolbar-actions\"><button type=\"button\" class=\"ir-log-button\" data-log-pause aria-pressed=\"false\" title=\"Pause new lines on screen while they continue buffering\">Pause</button> <button type=\"button\" class=\"ir-log-button\" data-log-follow aria-pressed=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var14 string
 			templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.ResolveAttributeValue(strconv.FormatBool(viewer.Follow))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `log_viewer.templ`, Line: 34, Col: 112}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `log_viewer.templ`, Line: 35, Col: 113}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var14)
 			if templ_7745c5c3_Err != nil {
@@ -204,13 +204,32 @@ func logViewer(viewer *LogViewerConcrete) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			if viewer.Clearable {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "<button type=\"button\" class=\"ir-log-icon-button\" data-log-clear aria-label=\"Clear displayed logs\" title=\"Clear displayed logs from this viewer; the log file is not deleted\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M4 7h16M9 7V4h6v3m-8 0 1 13h8l1-13\"></path></svg></button>")
+			if viewer.Download {
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "<a class=\"ir-log-button\" data-log-download href=\"")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				var templ_7745c5c3_Var15 templ.SafeURL
+				templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinURLErrs(viewer.Endpoint)
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `log_viewer.templ`, Line: 37, Col: 71}
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "\" download title=\"Download the complete displayed log file\">Download</a> ")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "</div><div class=\"ir-log-viewport\" data-log-viewport tabindex=\"0\"><div class=\"ir-log-scroll-size\" data-log-scroll-size><div class=\"ir-log-rows\" data-log-rows></div></div></div><div class=\"ir-log-footer\"><span data-log-count>0 entries</span> <span data-log-rate></span> <button type=\"button\" class=\"ir-log-new\" data-log-new hidden>Jump to latest</button> <span class=\"ir-log-footer-hint\">Newest at bottom</span></div></div>")
+			if viewer.Clearable {
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "<button type=\"button\" class=\"ir-log-icon-button\" data-log-clear aria-label=\"Clear displayed logs\" title=\"Clear displayed logs from this viewer; the log file is not deleted\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M4 7h16M9 7V4h6v3m-8 0 1 13h8l1-13\"></path></svg></button>")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "</div></div><div class=\"ir-log-viewport\" data-log-viewport tabindex=\"0\"><div class=\"ir-log-scroll-size\" data-log-scroll-size><div class=\"ir-log-rows\" data-log-rows></div></div></div><div class=\"ir-log-footer\"><span data-log-count>0 entries</span> <span data-log-rate></span> <button type=\"button\" class=\"ir-log-new\" data-log-new hidden>Jump to latest</button> <span class=\"ir-log-footer-hint\">Newest at bottom</span></div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

@@ -32,6 +32,7 @@ type FormLogViewer[T core.Model] struct {
 	SearchableBool  tools.Resolvable[*ctxForm.Field[T], bool]
 	ClearableBool   tools.Resolvable[*ctxForm.Field[T], bool]
 	FollowBool      tools.Resolvable[*ctxForm.Field[T], bool]
+	DownloadBool    tools.Resolvable[*ctxForm.Field[T], bool]
 	ANSIBool        tools.Resolvable[*ctxForm.Field[T], bool]
 }
 
@@ -48,6 +49,7 @@ type LogViewerConcrete struct {
 	Searchable   bool
 	Clearable    bool
 	Follow       bool
+	Download     bool
 	ANSI         bool
 }
 
@@ -67,6 +69,7 @@ func New[T core.Model](name, endpoint string) *FormLogViewer[T] {
 		SearchableBool:          staticValue[*ctxForm.Field[T]](true),
 		ClearableBool:           staticValue[*ctxForm.Field[T]](true),
 		FollowBool:              staticValue[*ctxForm.Field[T]](true),
+		DownloadBool:            staticValue[*ctxForm.Field[T]](false),
 		ANSIBool:                staticValue[*ctxForm.Field[T]](true),
 	}
 }
@@ -109,14 +112,16 @@ func (r *FormLogViewer[T]) Height(height string) *FormLogViewer[T] {
 
 // Levels defines the visible level toggles. Values are normalized in the browser.
 func (r *FormLogViewer[T]) Levels(levels ...string) *FormLogViewer[T] {
-	normalized := make([]string, 0, len(levels))
-	for _, level := range levels {
-		level = strings.TrimSpace(strings.ToUpper(level))
-		if level != "" {
-			normalized = append(normalized, level)
-		}
-	}
-	tools.SetFieldValue(&r.LevelsStr, strings.Join(normalized, ","))
+	tools.SetFieldValue(&r.LevelsStr, normalizeLevels(levels))
+	return r
+}
+
+// LevelsFn resolves the visible level toggles from the current form request.
+// Return nil or an empty slice to hide the level controls for the current value.
+func (r *FormLogViewer[T]) LevelsFn(fn func(*ctxForm.Field[T]) []string) *FormLogViewer[T] {
+	tools.SetFieldValue(&r.LevelsStr, func(ctx *ctxForm.Field[T]) string {
+		return normalizeLevels(fn(ctx))
+	})
 	return r
 }
 
@@ -147,6 +152,13 @@ func (r *FormLogViewer[T]) WithoutClear() *FormLogViewer[T] {
 // WithoutFollow starts the viewer without automatically following new lines.
 func (r *FormLogViewer[T]) WithoutFollow() *FormLogViewer[T] {
 	tools.SetFieldValue(&r.FollowBool, false)
+	return r
+}
+
+// Download displays a control for downloading the complete selected log file.
+// The handler must also be created with Config.AllowDownloads enabled.
+func (r *FormLogViewer[T]) Download() *FormLogViewer[T] {
+	tools.SetFieldValue(&r.DownloadBool, true)
 	return r
 }
 
@@ -193,6 +205,7 @@ func (r *FormLogViewer[T]) Copy() field.IFormFieldResolvable[T] {
 		SearchableBool:          r.SearchableBool,
 		ClearableBool:           r.ClearableBool,
 		FollowBool:              r.FollowBool,
+		DownloadBool:            r.DownloadBool,
 		ANSIBool:                r.ANSIBool,
 	}
 }
@@ -234,6 +247,7 @@ func registerFieldResolver[T core.Model]() {
 				Searchable:            value.SearchableBool.Get(ctx),
 				Clearable:             value.ClearableBool.Get(ctx),
 				Follow:                value.FollowBool.Get(ctx),
+				Download:              value.DownloadBool.Get(ctx),
 				ANSI:                  value.ANSIBool.Get(ctx),
 			}, nil
 		},
@@ -242,4 +256,15 @@ func registerFieldResolver[T core.Model]() {
 
 func staticValue[Context iridiumcontext.CustomContext, Value any](value Value) tools.Resolvable[Context, Value] {
 	return tools.Resolvable[Context, Value]{IsStatic: true, StaticValue: value}
+}
+
+func normalizeLevels(levels []string) string {
+	normalized := make([]string, 0, len(levels))
+	for _, level := range levels {
+		level = strings.TrimSpace(strings.ToUpper(level))
+		if level != "" {
+			normalized = append(normalized, level)
+		}
+	}
+	return strings.Join(normalized, ",")
 }

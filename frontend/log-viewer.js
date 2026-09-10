@@ -33,12 +33,14 @@ class LogViewer {
     this.levelControls = root.querySelector("[data-log-levels]");
     this.pauseButton = root.querySelector("[data-log-pause]");
     this.followButton = root.querySelector("[data-log-follow]");
+    this.downloadButton = root.querySelector("[data-log-download]");
     this.count = root.querySelector("[data-log-count]");
     this.rate = root.querySelector("[data-log-rate]");
     this.newButton = root.querySelector("[data-log-new]");
 
     root.style.height = root.dataset.height || "32rem";
     if (root.dataset.searchable === "false") this.search.closest(".ir-log-search").hidden = true;
+    if (this.downloadButton) this.downloadButton.href = this.buildEndpoint(true).href;
 
     this.buildLevelControls();
     this.bind();
@@ -125,10 +127,7 @@ class LogViewer {
   }
 
   connect() {
-    const endpoint = new URL(this.root.dataset.endpoint, document.baseURI);
-    endpoint.searchParams.set("source", this.root.dataset.source);
-    if (this.root.dataset.directory) endpoint.searchParams.set("directory", this.root.dataset.directory);
-    endpoint.searchParams.set("lines", this.root.dataset.initialLines || "250");
+    const endpoint = this.buildEndpoint();
     this.setStatus("connecting", "Connecting");
     this.eventSource = new EventSource(endpoint, { withCredentials: true });
     this.eventSource.addEventListener("ready", () => this.setStatus("live", "Live"));
@@ -144,6 +143,15 @@ class LogViewer {
       catch { this.setStatus("error", "Stream unavailable"); }
     });
     this.eventSource.onerror = () => this.setStatus("connecting", "Reconnecting");
+  }
+
+  buildEndpoint(download = false) {
+    const endpoint = new URL(this.root.dataset.endpoint, document.baseURI);
+    endpoint.searchParams.set("source", this.root.dataset.source);
+    if (this.root.dataset.directory) endpoint.searchParams.set("directory", this.root.dataset.directory);
+    if (download) endpoint.searchParams.set("download", "1");
+    else endpoint.searchParams.set("lines", this.root.dataset.initialLines || "250");
+    return endpoint;
   }
 
   receive(raw) {

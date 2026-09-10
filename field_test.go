@@ -38,6 +38,9 @@ func TestFormLogViewerResolvesAsPresentationalField(t *testing.T) {
 	if concrete.IsDehydrated() {
 		t.Fatal("log viewer must not write presentation data to the form model")
 	}
+	if concrete.Download {
+		t.Fatal("download should be disabled by default")
+	}
 
 	var rendered bytes.Buffer
 	if err := concrete.Component().Render(context.Background(), &rendered); err != nil {
@@ -60,6 +63,63 @@ func TestFormLogViewerResolvesAsPresentationalField(t *testing.T) {
 	}
 	if strings.Contains(html, `name="RuntimeLogs"`) {
 		t.Fatal("presentational viewer unexpectedly rendered a submitted input")
+	}
+	if strings.Contains(html, `data-log-download`) {
+		t.Fatal("download control was rendered without opt-in")
+	}
+}
+
+func TestFormLogViewerDownloadIsOptIn(t *testing.T) {
+	t.Parallel()
+
+	concrete := New[testModel]("RuntimeLogs", "/logs/stream").
+		Download().
+		Resolve(&ctxForm.Field[testModel]{}).(*LogViewerConcrete)
+
+	if !concrete.Download {
+		t.Fatal("download should be enabled")
+	}
+
+	var rendered bytes.Buffer
+	if err := concrete.Component().Render(context.Background(), &rendered); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(rendered.String(), `data-log-download`) {
+		t.Fatal("download control was not rendered after opt-in")
+	}
+}
+
+func TestFormLogViewerLevelsFnResolvesAndCanHideControls(t *testing.T) {
+	t.Parallel()
+
+	var called bool
+	concrete := New[testModel]("RuntimeLogs", "/logs/stream").
+		LevelsFn(func(*ctxForm.Field[testModel]) []string {
+			called = true
+			return []string{"debug", "error"}
+		}).
+		Resolve(&ctxForm.Field[testModel]{}).(*LogViewerConcrete)
+
+	if !called {
+		t.Fatal("levels resolver was not called")
+	}
+	if concrete.Levels != "DEBUG,ERROR" {
+		t.Fatalf("resolved levels = %q, want %q", concrete.Levels, "DEBUG,ERROR")
+	}
+
+	hidden := New[testModel]("RuntimeLogs", "/logs/stream").
+		LevelsFn(func(*ctxForm.Field[testModel]) []string { return nil }).
+		Resolve(&ctxForm.Field[testModel]{}).(*LogViewerConcrete)
+	if hidden.Levels != "" {
+		t.Fatalf("resolved hidden levels = %q, want empty", hidden.Levels)
+	}
+
+	var rendered bytes.Buffer
+	if err := hidden.Component().Render(context.Background(), &rendered); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(rendered.String(), `data-levels=""`) {
+		t.Fatal("empty levels resolver result was not rendered")
 	}
 }
 

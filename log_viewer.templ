@@ -30,13 +30,18 @@ templ logViewer(viewer *LogViewerConcrete) {
 					<input type="search" placeholder="Filter logs…" autocomplete="off" spellcheck="false" data-log-search/>
 				</label>
 				<div class="ir-log-levels" data-log-levels></div>
-				<button type="button" class="ir-log-button" data-log-pause aria-pressed="false" title="Pause new lines on screen while they continue buffering">Pause</button>
-				<button type="button" class="ir-log-button" data-log-follow aria-pressed={ strconv.FormatBool(viewer.Follow) } title="Keep the view pinned to the newest log lines as they arrive">Tail</button>
-				if viewer.Clearable {
-					<button type="button" class="ir-log-icon-button" data-log-clear aria-label="Clear displayed logs" title="Clear displayed logs from this viewer; the log file is not deleted">
-						<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m-8 0 1 13h8l1-13"/></svg>
-					</button>
-				}
+				<div class="ir-log-toolbar-actions">
+					<button type="button" class="ir-log-button" data-log-pause aria-pressed="false" title="Pause new lines on screen while they continue buffering">Pause</button>
+					<button type="button" class="ir-log-button" data-log-follow aria-pressed={ strconv.FormatBool(viewer.Follow) } title="Keep the view pinned to the newest log lines as they arrive">Tail</button>
+					if viewer.Download {
+						<a class="ir-log-button" data-log-download href={ viewer.Endpoint } download title="Download the complete displayed log file">Download</a>
+					}
+					if viewer.Clearable {
+						<button type="button" class="ir-log-icon-button" data-log-clear aria-label="Clear displayed logs" title="Clear displayed logs from this viewer; the log file is not deleted">
+							<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m-8 0 1 13h8l1-13"/></svg>
+						</button>
+					}
+				</div>
 			</div>
 			<div class="ir-log-viewport" data-log-viewport tabindex="0">
 				<div class="ir-log-scroll-size" data-log-scroll-size>

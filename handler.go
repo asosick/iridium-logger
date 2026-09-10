@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"mime"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -44,6 +45,7 @@ type DirectorySource struct {
 type Config struct {
 	Sources         []Source
 	Directories     []DirectorySource
+	AllowDownloads  bool
 	PollInterval    time.Duration
 	Heartbeat       time.Duration
 	MaxInitialLines int
@@ -55,6 +57,7 @@ type Config struct {
 type Handler struct {
 	sources         map[string]Source
 	directories     map[string]DirectorySource
+	allowDownloads  bool
 	pollInterval    time.Duration
 	heartbeat       time.Duration
 	maxInitialLines int
@@ -119,6 +122,7 @@ func NewHandler(config Config) (*Handler, error) {
 	return &Handler{
 		sources:         sources,
 		directories:     directories,
+		allowDownloads:  config.AllowDownloads,
 		pollInterval:    config.PollInterval,
 		heartbeat:       config.Heartbeat,
 		maxInitialLines: config.MaxInitialLines,
@@ -127,15 +131,15 @@ func NewHandler(config Config) (*Handler, error) {
 	}, nil
 }
 
-// RegisterRoute adds the stream to an Iridium mux. The mux determines which
-// panel authentication and page middleware protect it.
+// RegisterRoute adds the stream and download endpoint to an Iridium mux. The
+// mux determines which panel authentication and page middleware protect it.
 func (h *Handler) RegisterRoute(mux wrapper.IMux, route string) {
 	// Iridium's scoped mux prefixes paths before delegating to http.ServeMux.
 	// Method validation stays in ServeHTTP so the prefix is applied correctly.
 	mux.Handle(route, h)
 }
 
-// ServeHTTP serves a single SSE stream selected by the source query parameter.
+// ServeHTTP serves a single SSE stream or a download selected by the source query parameter.
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		w.Header().Set("Allow", http.MethodGet)
@@ -146,6 +150,14 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	source, ok := h.resolveSource(r.URL.Query().Get("directory"), r.URL.Query().Get("source"))
 	if !ok {
 		http.Error(w, "unknown log source", http.StatusNotFound)
+		return
+	}
+	if r.URL.Query().Get("download") == "1" {
+		if !h.allowDownloads {
+			http.NotFound(w, r)
+			return
+		}
+		h.serveDownload(w, r, source)
 		return
 	}
 	flusher, ok := w.(http.Flusher)
@@ -216,6 +228,50 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			flusher.Flush()
 		}
 	}
+}
+
+func (h *Handler) serveDownload(w http.ResponseWriter, r *http.Request, source Source) {
+	file, err := os.Open(source.Path)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			http.NotFound(w, r)
+			return
+		}
+		http.Error(w, "unable to open the log source", http.StatusInternalServerError)
+		return
+	}
+	defer file.Close()
+
+	info, err := file.Stat()
+	if err != nil {
+		http.Error(w, "unable to inspect the log source", http.StatusInternalServerError)
+		return
+	}
+	if !info.Mode().IsRegular() {
+		http.NotFound(w, r)
+		return
+	}
+
+	filename := downloadFilename(source.Path)
+	w.Header().Set("Cache-Control", "no-store")
+	w.Header().Set("Content-Disposition", mime.FormatMediaType("attachment", map[string]string{"filename": filename}))
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+	http.ServeContent(w, r, filename, info.ModTime(), file)
+}
+
+func downloadFilename(path string) string {
+	filename := filepath.Base(path)
+	filename = strings.Map(func(r rune) rune {
+		if r < 0x20 || r == 0x7f {
+			return -1
+		}
+		return r
+	}, filename)
+	if filename == "" || filename == "." || filename == ".." {
+		return "log.txt"
+	}
+	return filename
 }
 
 func (h *Handler) resolveSource(directoryID, sourceID string) (Source, bool) {

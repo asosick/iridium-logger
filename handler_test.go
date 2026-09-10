@@ -56,6 +56,65 @@ func TestHandlerRejectsBrowserSuppliedPaths(t *testing.T) {
 	}
 }
 
+func TestHandlerDownloadsConfiguredSource(t *testing.T) {
+	t.Parallel()
+
+	directory := t.TempDir()
+	logPath := filepath.Join(directory, "application.log")
+	if err := os.WriteFile(logPath, []byte("time=2026-09-10T12:00:00Z level=INFO msg=ready\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	handler, err := NewHandler(Config{
+		Sources:        []Source{{ID: "app", Path: logPath}},
+		AllowDownloads: true,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	request := httptest.NewRequest(http.MethodGet, "http://example.test/stream?source=app&download=1", nil)
+	response := httptest.NewRecorder()
+	handler.ServeHTTP(response, request)
+
+	if response.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d", response.Code, http.StatusOK)
+	}
+	if got := response.Header().Get("Content-Disposition"); got != `attachment; filename=application.log` {
+		t.Fatalf("Content-Disposition = %q", got)
+	}
+	if got := response.Header().Get("Content-Type"); got != "text/plain; charset=utf-8" {
+		t.Fatalf("Content-Type = %q", got)
+	}
+	if got := response.Body.String(); got != "time=2026-09-10T12:00:00Z level=INFO msg=ready\n" {
+		t.Fatalf("download body = %q", got)
+	}
+	if strings.Contains(response.Body.String(), logPath) {
+		t.Fatal("download exposed the configured filesystem path")
+	}
+}
+
+func TestHandlerRejectsDownloadsByDefault(t *testing.T) {
+	t.Parallel()
+
+	directory := t.TempDir()
+	logPath := filepath.Join(directory, "application.log")
+	if err := os.WriteFile(logPath, []byte("private\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	handler := newTestHandler(t, Source{ID: "app", Path: logPath})
+	request := httptest.NewRequest(http.MethodGet, "http://example.test/stream?source=app&download=1", nil)
+	response := httptest.NewRecorder()
+	handler.ServeHTTP(response, request)
+
+	if response.Code != http.StatusNotFound {
+		t.Fatalf("status = %d, want %d", response.Code, http.StatusNotFound)
+	}
+	if response.Body.String() == "private\n" {
+		t.Fatal("download was served without handler opt-in")
+	}
+}
+
 func TestRegisterRouteUsesIridiumPathPattern(t *testing.T) {
 	t.Parallel()
 

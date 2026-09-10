@@ -39,6 +39,7 @@
 }
 
 .ir-log-toolbar { flex-wrap: wrap; border-bottom: 1px solid var(--ir-log-border); }
+.ir-log-toolbar-actions { display: inline-flex; align-items: center; gap: .5rem; margin-left: auto; }
 .ir-log-footer { min-height: 2.25rem; border-top: 1px solid var(--ir-log-border); color: var(--ir-log-muted); font-size: .6875rem; }
 .ir-log-footer-hint { margin-left: auto; }
 
@@ -73,6 +74,16 @@
   cursor: pointer;
   font-size: .6875rem;
   font-weight: 600;
+}
+.ir-log-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font: inherit;
+  font-size: .6875rem;
+  font-weight: 600;
+  line-height: normal;
+  text-decoration: none;
 }
 .ir-log-level:hover, .ir-log-button:hover, .ir-log-icon-button:hover { color: var(--ir-log-text); border-color: color-mix(in srgb, var(--ir-log-border) 60%, white 24%); }
 .ir-log-level[aria-pressed="false"], .ir-log-button[aria-pressed="false"] { opacity: .48; }
