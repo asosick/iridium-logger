@@ -3,6 +3,8 @@ package main
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/base64"
 	"fmt"
 	"log"
 	"net/http"
@@ -36,8 +38,8 @@ func main() {
 	mux := http.NewServeMux()
 	config := iridiumconfig.NewIridiumConfig()
 	config.AppName = "Iridium Logger Demo"
-	config.AppKey = "aXJpZGl1bS1sb2dnZXItZGVtby1hcHAta2V5"
-	config.AppEncryptionKey = "aXJpZGl1bS1sb2dnZXItZGVtby1lbmNyeXB0aW9u"
+	config.AppKey = randomKey(64)
+	config.AppEncryptionKey = randomKey(32)
 	config.AppEnv = "development"
 
 	page := pagepanel.NewPanelFormPage[demoPage]("Live logs", "logs", form.NewForm[demoPage](nil).
@@ -64,14 +66,19 @@ func main() {
 			Middleware(demoAuthentication).
 			PanelMiddleware(middleware.Compression, middleware.Spa, middleware.ErrorPages))
 	app.Initialize(mux)
-	// Keep the preview endpoint explicit so EventSource can reach it through
-	// the panel prefix when running this standalone showcase.
-	mux.Handle("/demo/logs/stream", demoAuthentication(stream))
 
 	fmt.Println("Iridium Logger demo running at http://localhost:8899/demo/logs")
 	if err := http.ListenAndServe("localhost:8899", mux); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func randomKey(size int) string {
+	key := make([]byte, size)
+	if _, err := rand.Read(key); err != nil {
+		log.Fatal(err)
+	}
+	return base64.StdEncoding.EncodeToString(key)
 }
 
 func seedLog() string {

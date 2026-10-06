@@ -35,6 +35,9 @@ func TestFormLogViewerResolvesAsPresentationalField(t *testing.T) {
 	if concrete.Height != "40rem" || concrete.Levels != "DEBUG,ERROR" {
 		t.Fatalf("resolved height/levels = %q/%q", concrete.Height, concrete.Levels)
 	}
+	if concrete.RetainsState() {
+		t.Fatal("presentational viewer must not retain a value in the form checkpoint")
+	}
 	if concrete.IsDehydrated() {
 		t.Fatal("log viewer must not write presentation data to the form model")
 	}

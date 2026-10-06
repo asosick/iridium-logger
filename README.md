@@ -36,6 +36,8 @@ The browser bundle is framework-light. It does not require React, an iframe, a s
 go get github.com/asosick/iridium-logger
 ```
 
+This version targets Iridium `v0.1.0-alpha.4` and HTMX 4.
+
 The compiled JavaScript and CSS are embedded in the Go package. Applications using the plugin do not need to run npm. npm is only required when developing the plugin's frontend assets.
 
 ## Basic usage
@@ -131,7 +133,7 @@ Directory selection is intentionally narrow. Only regular direct children are ac
 | `MaxConnections` | `50` | Maximum simultaneous live streams for one handler. |
 | `AllowDownloads` | `false` | Enables complete log-file downloads through the handler. The field must also opt in with `Download()`. |
 
-Missing files are tolerated. This allows an application to start before a log file has been created; the viewer will continue polling and can begin displaying output when the file appears.
+Empty files render zero entries and continue following newly appended lines. Missing files are tolerated. This allows an application to start before a log file has been created; the viewer will continue polling and can begin displaying output when the file appears.
 
 ## Field API
 
@@ -203,6 +205,8 @@ The handler rejects unsupported methods, unknown source selections, and connecti
 
 ## HTMX and embedded assets
 
+The plugin uses HTMX 4 swap tasks and settle targets to handle live forms, outer swaps, and out-of-band updates. Append-only and cancelled swaps keep existing streams alive.
+
 The plugin registers its embedded assets when `New` is called. Its frontend initializes on page load and after HTMX swaps, and tears down EventSource connections, timers, event listeners, and virtualization state before swapped content is removed. This prevents stale streams when an Iridium form or page is replaced through HTMX or Alpine Morph.
 
 ## Frontend development
@@ -211,6 +215,7 @@ After changing `frontend/log-viewer.js` or `frontend/log-viewer.css`, rebuild th
 
 ```sh
 npm install
+npm run test:js
 npm run build
 templ generate
 go test ./...

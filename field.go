@@ -57,8 +57,10 @@ type LogViewerConcrete struct {
 func New[T core.Model](name, endpoint string) *FormLogViewer[T] {
 	registerAssets()
 	registerFieldResolver[T]()
+	base := field.NewBaseFormFieldResolvable[T](name)
+	base.DoNotRetainState()
 	return &FormLogViewer[T]{
-		BaseFormFieldResolvable: field.NewBaseFormFieldResolvable[T](name),
+		BaseFormFieldResolvable: base,
 		EndpointStr:             staticValue[*ctxForm.Field[T]](endpoint),
 		SourceStr:               staticValue[*ctxForm.Field[T]]("application"),
 		DirectoryStr:            staticValue[*ctxForm.Field[T]](""),

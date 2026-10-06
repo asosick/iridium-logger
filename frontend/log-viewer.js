@@ -5,6 +5,7 @@ import {
   observeElementRect,
 } from "@tanstack/virtual-core";
 import { FancyAnsi, stripAnsi } from "fancy-ansi";
+import { registerLifecycle } from "./lifecycle.js";
 
 const rowHeight = 28;
 const ansi = new FancyAnsi();
@@ -103,7 +104,7 @@ class LogViewer {
     this.renderRows();
     if (this.following) {
       requestAnimationFrame(() => {
-        if (this.following) this.virtualizer.scrollToEnd();
+        if (!this.destroyed && this.following) this.virtualizer.scrollToEnd();
       });
     }
   }
@@ -178,6 +179,7 @@ class LogViewer {
   }
 
   applyFilter() {
+    if (this.destroyed) return;
     const query = this.search.value.trim().toLocaleLowerCase();
     this.filtered = this.entries.filter((entry) => {
       const levelVisible = !entry.level || !this.levels.includes(entry.level) || this.visibleLevels.has(entry.level);
@@ -343,15 +345,5 @@ function destroyWithin(root) {
   for (const element of candidates) element.iridiumLogViewer?.destroy();
 }
 
-document.addEventListener("DOMContentLoaded", () => initialize());
-document.addEventListener("htmx:beforeSwap", (event) => {
-  if (event.detail.shouldSwap === false) return;
-  destroyWithin(event.detail.target);
-});
-document.addEventListener("htmx:afterSwap", (event) => initialize(event.detail.target));
-document.addEventListener("htmx:afterSettle", (event) => initialize(event.detail.target));
-document.addEventListener("htmx:beforeCleanupElement", (event) => {
-  destroyWithin(event.detail.elt);
-});
-
+registerLifecycle(document, initialize, destroyWithin);
 initialize();

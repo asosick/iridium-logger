@@ -212,6 +212,45 @@ func TestHandlerStreamsInitialAndAppendedLines(t *testing.T) {
 	}
 }
 
+func TestHandlerStreamsEmptyFileThenAppendedLines(t *testing.T) {
+	logPath := filepath.Join(t.TempDir(), "empty.log")
+	if err := os.WriteFile(logPath, nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	handler := newTestHandler(t, Source{ID: "app", Path: logPath})
+	handler.pollInterval = 10 * time.Millisecond
+	reader, writer := io.Pipe()
+	response := &streamResponseWriter{header: make(http.Header), writer: writer}
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	request := httptest.NewRequest(http.MethodGet, "http://example.test/stream?source=app", nil).WithContext(ctx)
+	done := make(chan struct{})
+	go func() {
+		handler.ServeHTTP(response, request)
+		_ = writer.Close()
+		close(done)
+	}()
+	t.Cleanup(func() {
+		cancel()
+		_ = reader.Close()
+		select {
+		case <-done:
+		case <-time.After(time.Second):
+			t.Error("stream did not stop after request cancellation")
+		}
+	})
+	stream := bufio.NewReader(reader)
+	for _, want := range []string{"event: ready\n", "data: \"app\"\n", "\n"} {
+		got, err := stream.ReadString('\n')
+		if err != nil || got != want {
+			t.Fatalf("empty file stream = %q, %v; want %q", got, err, want)
+		}
+	}
+	appendFile(t, logPath, "first appended line\n")
+	if got := readLineEvent(t, stream); got != "first appended line" {
+		t.Fatalf("appended line = %q", got)
+	}
+}
+
 type streamResponseWriter struct {
 	header http.Header
 	writer *io.PipeWriter
