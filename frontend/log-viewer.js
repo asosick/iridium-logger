@@ -6,6 +6,7 @@ import {
 } from "@tanstack/virtual-core";
 import { FancyAnsi, stripAnsi } from "fancy-ansi";
 import { registerLifecycle } from "./lifecycle.js";
+import { downloadLog } from "./download.js";
 
 const rowHeight = 28;
 const ansi = new FancyAnsi();
@@ -60,6 +61,10 @@ class LogViewer {
       this.entries = [];
       this.pending = [];
       this.applyFilter();
+    }, options);
+    this.downloadButton?.addEventListener("click", (event) => {
+      event.preventDefault();
+      this.download();
     }, options);
     this.newButton.addEventListener("click", () => {
       this.setFollowing(true);
@@ -251,6 +256,29 @@ class LogViewer {
     this.newButton.textContent = this.pending.length ? `${this.pending.length.toLocaleString()} new` : "Jump to latest";
   }
 
+  async download() {
+    if (this.downloading) return;
+    this.downloading = true;
+    this.downloadButton.ariaBusy = "true";
+    try {
+      const result = await downloadLog(this.buildEndpoint(true).href);
+      if (!result.ok && !this.destroyed) this.showProblem(result.message);
+    } finally {
+      this.downloading = false;
+      this.downloadButton.ariaBusy = "false";
+    }
+  }
+
+  showProblem(message) {
+    const status = this.root.querySelector(".ir-log-status");
+    const previous = { state: status.dataset.status, label: status.querySelector("[data-status-label]").textContent };
+    this.setStatus("error", message);
+    window.clearTimeout(this.problemTimer);
+    this.problemTimer = window.setTimeout(() => {
+      if (!this.destroyed && status.dataset.status === "error") this.setStatus(previous.state, previous.label);
+    }, 6000);
+  }
+
   setStatus(state, label) {
     const status = this.root.querySelector(".ir-log-status");
     status.dataset.status = state;
@@ -264,6 +292,7 @@ class LogViewer {
     this.abortController.abort();
     this.unmountVirtualizer?.();
     window.clearInterval(this.rateTimer);
+    window.clearTimeout(this.problemTimer);
     this.root.removeAttribute("data-log-initialized");
     delete this.root.iridiumLogViewer;
   }

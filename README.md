@@ -199,7 +199,7 @@ The handler exposes a `GET` SSE endpoint. It sends:
 - `problem` when the source is temporarily unavailable.
 - SSE comment heartbeats at the configured interval.
 
-When `AllowDownloads` is enabled, the same authenticated endpoint accepts `download=1` and returns the complete selected log file as a text attachment. The field must also opt in with `Download()`. The browser uses the selected source ID and, for directory sources, the selected direct-child filename; filesystem paths are never sent by the viewer.
+When `AllowDownloads` is enabled, the same authenticated endpoint accepts `download=1` and returns the complete selected log file as a text attachment. The field must also opt in with `Download()`. The browser uses the selected source ID and, for directory sources, the selected direct-child filename; filesystem paths are never sent by the viewer. The Download button fetches the file first, so a refused or missing download (for example when `AllowDownloads` is off) shows an error in the viewer's status instead of saving the error page.
 
 The handler rejects unsupported methods, unknown source selections, and connections over `MaxConnections`. It also disables common proxy buffering with `X-Accel-Buffering: no`; reverse proxies may require additional SSE configuration.
 
