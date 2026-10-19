@@ -8,6 +8,7 @@ import (
 
 	"github.com/iridiumgo/iridium/core/asset"
 	"github.com/iridiumgo/iridium/core/context/ctxForm"
+	"github.com/iridiumgo/iridium/core/field"
 )
 
 type testModel struct{}
@@ -143,6 +144,21 @@ func TestFormLogViewerCanHideClearControl(t *testing.T) {
 	}
 	if strings.Contains(rendered.String(), `data-log-clear`) {
 		t.Fatal("clear control was rendered")
+	}
+}
+
+// A visible viewer sends no control. The checkpoint must keep it out of the
+// omission check, or the form's next live request is refused.
+func TestFormLogViewerIsNotAnOmittedControl(t *testing.T) {
+	t.Parallel()
+
+	var resolvable any = New[testModel]("RuntimeLogs", "/logs/stream")
+	descriptor, ok := resolvable.(field.IFieldStateParameters[testModel])
+	if !ok {
+		t.Fatal("log viewer must describe its checkpoint parameters")
+	}
+	if missing := descriptor.StateCodecParameters(&ctxForm.Field[testModel]{})["missing"]; missing != "retain" {
+		t.Fatalf("missing control policy = %q, want retain", missing)
 	}
 }
 

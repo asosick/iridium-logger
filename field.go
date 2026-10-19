@@ -212,6 +212,14 @@ func (r *FormLogViewer[T]) Copy() field.IFormFieldResolvable[T] {
 	}
 }
 
+// StateCodecParameters tells the form checkpoint that the viewer submits no
+// control. Without it, a visible viewer is sealed as an editable control
+// expecting an empty value, and the next request from the form is refused
+// because the browser never sends one.
+func (r *FormLogViewer[T]) StateCodecParameters(*ctxForm.Field[T]) map[string]string {
+	return map[string]string{"missing": "retain"}
+}
+
 func (r *FormLogViewer[T]) Resolve(ctx *ctxForm.Field[T]) field.IField {
 	return bootstrap.MustResolveConcreteWithContext[*FormLogViewer[T], *LogViewerConcrete, *ctxForm.Field[T]](
 		ctx, logViewerResolver, r,
