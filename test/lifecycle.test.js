@@ -38,6 +38,13 @@ test('cancelled and append-only swaps keep the existing streams alive', () => {
   assert.deepEqual([...active], [root]);
 });
 
+test('a settled swap never mounts viewers in roots that are off the page', () => {
+  const {active, dispatch} = lifecycle();
+  const removedTarget = {isConnected: false}, parsedCopy = {isConnected: false}, merged = {isConnected: true};
+  dispatch('htmx:after:settle', {task: {target: removedTarget}, newContent: [parsedCopy, merged]});
+  assert.deepEqual([...active], [merged]);
+});
+
 test('outer and sibling swaps initialize the inserted roots even when the source is detached', () => {
   const {active, document, dispatch} = lifecycle();
   const target = {}, sibling = {};
