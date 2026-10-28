@@ -187,7 +187,7 @@ Each incoming line is retained as raw text and as a plain-text version with ANSI
 time=2026-07-24T15:04:05Z level=INFO msg="worker started"
 ```
 
-Recognized timestamps and levels are shown in dedicated columns, and the message is rendered separately. `WARNING` is normalized to `WARN`. Lines that do not match this structure remain readable as full-width unstructured output. Custom JSON, syslog, or other formats are displayed safely as text unless their fields happen to match the supported key/value pattern.
+Recognized timestamps and levels are shown in dedicated columns, and the message is rendered separately. `WARNING` is normalized to `WARN`. Only a line that begins with a `key=value` pair is parsed this way. Lines that do not match this structure remain readable as full-width unstructured output. Custom JSON, syslog, or other formats are displayed safely as text unless they begin with the supported key/value pattern.
 
 ## Stream and download behaviour
 

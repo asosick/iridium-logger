@@ -7,6 +7,7 @@ import {
 import { FancyAnsi, stripAnsi } from "fancy-ansi";
 import { registerLifecycle } from "./lifecycle.js";
 import { downloadLog } from "./download.js";
+import { normalizeLevel, parseEntry } from "./entry.js";
 
 const rowHeight = 28;
 const ansi = new FancyAnsi();
@@ -296,38 +297,6 @@ class LogViewer {
     this.root.removeAttribute("data-log-initialized");
     delete this.root.iridiumLogViewer;
   }
-}
-
-function parseEntry(raw) {
-  const plain = stripAnsi(raw);
-  const fields = {};
-  const matcher = /(?:^|\s)([A-Za-z_][\w.-]*)=("(?:\\.|[^"\\])*"|[^\s]+)/g;
-  let match;
-  while ((match = matcher.exec(plain)) !== null) {
-    let value = match[2];
-    if (value.startsWith('"')) {
-      try { value = JSON.parse(value); }
-      catch { value = value.slice(1, -1); }
-    }
-    fields[match[1]] = value;
-  }
-  const time = fields.time || fields.timestamp || "";
-  const level = normalizeLevel(fields.level || "");
-  const message = fields.msg || fields.message || "";
-  return {
-    raw,
-    plain,
-    time,
-    level,
-    message,
-    structured: Boolean(time || level || message),
-  };
-}
-
-function normalizeLevel(level) {
-  const normalized = level.toUpperCase();
-  if (normalized === "WARNING") return "WARN";
-  return normalized;
 }
 
 function displayTime(value) {
