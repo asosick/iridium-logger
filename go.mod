@@ -1,10 +1,10 @@
 module github.com/asosick/iridium-logger
 
-go 1.27.0
+go 1.27.2
 
 require (
 	github.com/a-h/templ v0.3.1020
-	github.com/iridiumgo/iridium v0.1.0-alpha.11
+	github.com/iridiumgo/iridium v0.1.0-alpha.23
 )
 
 require (
@@ -13,7 +13,7 @@ require (
 	github.com/gorilla/securecookie v1.1.2 // indirect
 	github.com/gorilla/sessions v1.4.0 // indirect
 	github.com/iridiumgo/iridium-icons v1.0.9 // indirect
-	golang.org/x/crypto v0.57.0 // indirect
-	golang.org/x/sys v0.48.0 // indirect
-	golang.org/x/text v0.42.0 // indirect
+	golang.org/x/crypto v0.58.0 // indirect
+	golang.org/x/sys v0.49.0 // indirect
+	golang.org/x/text v0.43.0 // indirect
 )
