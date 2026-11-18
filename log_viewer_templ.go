@@ -9,7 +9,7 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import "strconv"
-import "github.com/iridiumgo/iridium/view/blocks/fields"
+import "github.com/goiridium/iridium/view/blocks/fields"
 
 func logViewer(viewer *LogViewerConcrete) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {

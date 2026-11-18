@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/iridiumgo/iridium/network/wrapper"
+	"github.com/goiridium/iridium/network/wrapper"
 )
 
 const (

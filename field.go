@@ -6,13 +6,13 @@ import (
 	"sync"
 
 	"github.com/a-h/templ"
-	"github.com/iridiumgo/iridium/bootstrap"
-	"github.com/iridiumgo/iridium/core"
-	iridiumcontext "github.com/iridiumgo/iridium/core/context"
-	"github.com/iridiumgo/iridium/core/context/ctxForm"
-	"github.com/iridiumgo/iridium/core/field"
-	"github.com/iridiumgo/iridium/core/rules"
-	"github.com/iridiumgo/iridium/core/tools"
+	"github.com/goiridium/iridium/bootstrap/extend"
+	"github.com/goiridium/iridium/core"
+	"github.com/goiridium/iridium/core/context/ctxBase"
+	"github.com/goiridium/iridium/core/context/ctxForm"
+	"github.com/goiridium/iridium/core/field"
+	"github.com/goiridium/iridium/core/rules"
+	"github.com/goiridium/iridium/core/tools"
 )
 
 const logViewerResolver = "iridium-logger::form-log-viewer"
@@ -221,7 +221,7 @@ func (r *FormLogViewer[T]) StateCodecParameters(*ctxForm.Field[T]) map[string]st
 }
 
 func (r *FormLogViewer[T]) Resolve(ctx *ctxForm.Field[T]) field.IField {
-	return bootstrap.MustResolveConcreteWithContext[*FormLogViewer[T], *LogViewerConcrete, *ctxForm.Field[T]](
+	return extend.MustResolveConcreteWithContext[*FormLogViewer[T], *LogViewerConcrete, *ctxForm.Field[T]](
 		ctx, logViewerResolver, r,
 	)
 }
@@ -242,7 +242,7 @@ func registerFieldResolver[T core.Model]() {
 	if _, loaded := registeredFieldTypes.LoadOrStore(typeKey, struct{}{}); loaded {
 		return
 	}
-	bootstrap.RegisterContextResolver[*FormLogViewer[T], *LogViewerConcrete, *ctxForm.Field[T]](
+	extend.RegisterContextResolver[*FormLogViewer[T], *LogViewerConcrete, *ctxForm.Field[T]](
 		logViewerResolver,
 		func(ctx *ctxForm.Field[T], value *FormLogViewer[T]) (*LogViewerConcrete, error) {
 			return &LogViewerConcrete{
@@ -264,7 +264,7 @@ func registerFieldResolver[T core.Model]() {
 	)
 }
 
-func staticValue[Context iridiumcontext.CustomContext, Value any](value Value) tools.Resolvable[Context, Value] {
+func staticValue[Context ctxBase.CustomContext, Value any](value Value) tools.Resolvable[Context, Value] {
 	return tools.Resolvable[Context, Value]{IsStatic: true, StaticValue: value}
 }
 

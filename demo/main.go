@@ -12,15 +12,15 @@ import (
 	"time"
 
 	iridiumlogs "github.com/asosick/iridium-logger"
-	iridiumconfig "github.com/iridiumgo/iridium/config"
-	"github.com/iridiumgo/iridium/core/auth/user"
-	"github.com/iridiumgo/iridium/core/context/ctxkeys"
-	"github.com/iridiumgo/iridium/core/form"
-	"github.com/iridiumgo/iridium/core/iridium"
-	pagepanel "github.com/iridiumgo/iridium/core/page/panel"
-	corepanel "github.com/iridiumgo/iridium/core/panel"
-	"github.com/iridiumgo/iridium/network/middleware"
-	"github.com/iridiumgo/iridium/network/wrapper"
+	iridiumconfig "github.com/goiridium/iridium/config"
+	"github.com/goiridium/iridium/core/auth/user"
+	"github.com/goiridium/iridium/core/context/ctxkeys"
+	"github.com/goiridium/iridium/core/form"
+	"github.com/goiridium/iridium/core/iridium"
+	"github.com/goiridium/iridium/core/page/pages"
+	corepanel "github.com/goiridium/iridium/core/panel"
+	"github.com/goiridium/iridium/network/middleware"
+	"github.com/goiridium/iridium/network/wrapper"
 )
 
 type demoPage struct{}
@@ -36,13 +36,13 @@ func main() {
 	go appendDemoLines(logPath)
 
 	mux := http.NewServeMux()
-	config := iridiumconfig.NewIridiumConfig()
+	config := iridiumconfig.New()
 	config.AppName = "Iridium Logger Demo"
 	config.AppKey = randomKey(64)
 	config.AppEncryptionKey = randomKey(32)
-	config.AppEnv = "development"
+	config.AppEnv = iridiumconfig.EnvDevelopment
 
-	page := pagepanel.NewPanelFormPage[demoPage]("Live logs", "logs", form.NewForm[demoPage](nil).
+	page := pages.NewPanelFormPage[demoPage]("Live logs", "logs", form.New[demoPage](nil).
 		HideFooter().
 		Schema(
 			iridiumlogs.New[demoPage]("DemoLogs", "/demo/logs/stream").
@@ -58,8 +58,8 @@ func main() {
 			stream.RegisterRoute(scoped, "/stream")
 		})
 
-	app := iridium.NewIridiumApp(config).
-		RegisterPanels(corepanel.NewPanel(mux).
+	app := iridium.NewApp(config).
+		RegisterPanels(corepanel.New(mux).
 			ID("demo").
 			Path("demo").
 			PanelItems(page).

@@ -6,9 +6,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/iridiumgo/iridium/core/asset"
-	"github.com/iridiumgo/iridium/core/context/ctxForm"
-	"github.com/iridiumgo/iridium/core/field"
+	"github.com/goiridium/iridium/core/asset"
+	"github.com/goiridium/iridium/core/context/ctxForm"
+	"github.com/goiridium/iridium/core/field"
 )
 
 type testModel struct{}

@@ -4,7 +4,7 @@ import (
 	"embed"
 	"sync"
 
-	"github.com/iridiumgo/iridium/core/asset"
+	"github.com/goiridium/iridium/core/asset"
 )
 
 const assetPackage = "iridium-logger"

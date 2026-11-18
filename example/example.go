@@ -2,14 +2,14 @@ package example
 
 import (
 	iridiumlogs "github.com/asosick/iridium-logger"
-	"github.com/iridiumgo/iridium/core/form"
-	"github.com/iridiumgo/iridium/core/page/panel"
-	"github.com/iridiumgo/iridium/network/wrapper"
+	"github.com/goiridium/iridium/core/form"
+	"github.com/goiridium/iridium/core/page/pages"
+	"github.com/goiridium/iridium/network/wrapper"
 )
 
 type LogPage struct{}
 
-func NewPage() (*panel.PanelFormPage[LogPage], error) {
+func NewPage() (*pages.PanelFormPage[LogPage], error) {
 	stream, err := iridiumlogs.NewHandler(iridiumlogs.Config{
 		Sources: []iridiumlogs.Source{
 			{ID: "application", Path: "./storage/logs/application.log"},
@@ -19,7 +19,7 @@ func NewPage() (*panel.PanelFormPage[LogPage], error) {
 		return nil, err
 	}
 
-	definition := form.NewForm[LogPage](nil).
+	definition := form.New[LogPage](nil).
 		HideFooter().
 		Schema(
 			iridiumlogs.New[LogPage]("ApplicationLogs", "/admin/system/logs/stream").
@@ -29,7 +29,7 @@ func NewPage() (*panel.PanelFormPage[LogPage], error) {
 				Height("40rem"),
 		)
 
-	return panel.NewPanelFormPage[LogPage]("Logs", "/system/logs", definition).
+	return pages.NewPanelFormPage[LogPage]("Logs", "/system/logs", definition).
 		CustomRoutes(func(mux wrapper.IMux) {
 			stream.RegisterRoute(mux, "/stream")
 		}), nil
