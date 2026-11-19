@@ -36,7 +36,7 @@ The browser bundle is framework-light. It does not require React, an iframe, a s
 go get github.com/asosick/iridium-logger
 ```
 
-This version targets Iridium `v0.1.0-alpha.4` and HTMX 4.
+This version targets Iridium `v0.2.0-alpha.1` and HTMX 4.
 
 The compiled JavaScript and CSS are embedded in the Go package. Applications using the plugin do not need to run npm. npm is only required when developing the plugin's frontend assets.
 
@@ -56,7 +56,7 @@ if err != nil {
 	return nil, err
 }
 
-definition := form.NewForm[LogPage](nil).
+definition := form.New[LogPage](nil).
 	HideFooter().
 	Schema(
 		iridiumlogs.New[LogPage]("ApplicationLogs", "/admin/system/logs/stream").
@@ -70,7 +70,7 @@ definition := form.NewForm[LogPage](nil).
 			Height("40rem"),
 	)
 
-page := panel.NewPanelFormPage[LogPage]("Logs", "/system/logs", definition).
+page := pages.NewPanelFormPage[LogPage]("Logs", "/system/logs", definition).
 	CustomRoutes(func(mux wrapper.IMux) {
 		stream.RegisterRoute(mux, "/stream")
 	})
