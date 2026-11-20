@@ -4,7 +4,7 @@ go 1.27.2
 
 require (
 	github.com/a-h/templ v0.3.1020
-	github.com/goiridium/iridium v0.2.0-alpha.1
+	github.com/goiridium/iridium v0.2.0-alpha.2
 )
 
 require (
